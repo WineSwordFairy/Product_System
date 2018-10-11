@@ -13,6 +13,7 @@ public class RedisClient {
     @Autowired
     private JedisPool jedisPool;
 
+    //设置键value
     public void set(String key, String value) throws Exception {
         Jedis jedis = null;
         try {
@@ -26,16 +27,31 @@ public class RedisClient {
         }
     }
 
-    public String get(String key) throws Exception {
+    //检查键是否存在。
+    public void CheckIsKeyExists(String key) throws Exception {
         Jedis jedis = null;
         try {
-
-            //拿一个连接。
+            ///获取一个连接吗？
             jedis = jedisPool.getResource();
-            return jedis.get(key);
-        } finally {            //返还到连接池
+            ///设置键？
+            jedis.exists(key);
+        } finally {
+            //返还到连接池
             jedis.close();
         }
     }
-}
+
+        //获取键值.
+        public String get (String key) throws Exception {
+            Jedis jedis = null;
+            try {
+
+                //拿一个连接。
+                jedis = jedisPool.getResource();
+                return jedis.get(key);
+            } finally {            //返还到连接池
+                jedis.close();
+            }
+        }
+    }
 

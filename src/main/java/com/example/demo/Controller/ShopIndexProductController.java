@@ -18,27 +18,27 @@ public class ShopIndexProductController {
     public String Index() {
 
         ///查询对应的缓存数据。
-
         try {
-            redisClinet.set("productf", "1");
-            return "success";
+
+
+
+
+            if (true) {
+                ///从缓存读取数据。
+
+            } else {
+
+                ///读DB。
+
+                ///写缓存。
+
+                ///格式化数据返回。
+            }
         } catch (Exception ex) {
 
             return "";
         }
-//        if (flag) {
-//            ///从缓存读取数据。
-//
-//            ///格式化数据返回。
-//
-//        } else {
-//
-//            ///读DB。
-//
-//            ///写缓存。
-//
-//            ///格式化数据返回。
-//        }
+        ///格式化数据返回。
 
 
     }
