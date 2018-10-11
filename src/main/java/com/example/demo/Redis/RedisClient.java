@@ -13,6 +13,20 @@ public class RedisClient {
     @Autowired
     private JedisPool jedisPool;
 
+    public boolean CheckIsKeyExists(String key)  {
+        Jedis jedis = null;
+        try {
+            ///获取一个连接吗？
+            jedis = jedisPool.getResource();
+            ///设置键？
+            boolean isExists = jedis.exists(key);
+            return isExists;
+        } finally {
+            //返还到连接池
+            jedis.close();
+        }
+    }
+
     public void set(String key, String value) throws Exception {
         Jedis jedis = null;
         try {
