@@ -1,5 +1,6 @@
 package com.example.demo.Redis;
 
+import com.example.demo.BaseClass.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
@@ -9,7 +10,7 @@ import redis.clients.jedis.JedisPool;
  * 就一个小Demo 随便写下 * @author bigsea *
  */
 @Component
-public class RedisClient {
+public class RedisClient extends Person {
     @Autowired
     private JedisPool jedisPool;
 
