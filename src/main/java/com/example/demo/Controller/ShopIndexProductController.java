@@ -3,28 +3,27 @@
 import com.example.demo.Book.ProductBook;
 import com.example.demo.DataTools.ConvertTool;
 import com.example.demo.Model.ProductInfo;
+import com.example.demo.Model.ResponseInfo;
 import com.example.demo.Redis.RedisClient;
+import com.example.demo.Service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.demo.Redis.RedisClient;
 
 import java.util.List;
 
-//import com.ibigsea.springboot_redis_demo.config.RedisClient;
 @RestController
 public class ShopIndexProductController {
 
+    @Autowired
+    private ProductService productService;
 
     @Autowired
     private RedisClient redisClinet;
-    @Autowired
-    private ProductBook productBook;
 
     @RequestMapping("/ShopIndexProduct")
     public String Index() {
-
-
-
         try {
             if (redisClinet.CheckIsKeyExists("ShowFirstPageProduct_key")) {
                 ///查询对应的缓存数据。
@@ -46,9 +45,6 @@ public class ShopIndexProductController {
 
             return "";
         }
-
-
-
     }
 
 
