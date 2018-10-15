@@ -24,9 +24,9 @@ public class BuyProductController {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public String BuyProduct(int accountId, int productId, int count, String createDate) {
         try {
+
             //查询商品数量。
             ResponseInfo result = productService.BuyProduct(accountId, productId, count);
-
             if (result.getCode() == 0) {
                 ///商品数量足够。
                 buyProductRecordService.AddBuyProductRecord(accountId, productId, count, createDate);
@@ -36,7 +36,28 @@ public class BuyProductController {
             }
         } catch (Exception ex) {
 
-            return ConvertTool.ConvertResponseInfo(new ResponseInfo(-1,ex.getMessage()));
+            return ConvertTool.ConvertResponseInfo(new ResponseInfo(-1, ex.getMessage()));
+        }
+    }
+
+
+    @RequestMapping("/BuyProductByRedis")
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public String BuyProductByRedis(int accountId, int productId, int count, String createDate) {
+        try {
+            //查询商品数量。
+            ResponseInfo result = productService.BuyProductByRedis(accountId, productId, count);
+            if (result.getCode() == 0) {
+                ///商品数量足够。
+                buyProductRecordService.AddBuyProductRecord(accountId, productId, count, createDate);
+                return "成功!";
+            } else {
+                return "商品已售空!";
+            }
+        } catch (Exception ex)
+
+        {
+            return ConvertTool.ConvertResponseInfo(new ResponseInfo(-1, ex.getMessage()));
         }
     }
 }
