@@ -64,16 +64,18 @@ public class RedisClient extends Person {
         }
     }
 
-    public String get(String key) throws Exception {
-        Jedis jedis = null;
-        try {
 
-            //拿一个连接。
-            jedis = jedisPool.getResource();
-            return jedis.get(key);
-        } finally {            //返还到连接池
-            jedis.close();
+        //获取键值.
+        public String get (String key) throws Exception {
+            Jedis jedis = null;
+            try {
+
+                //拿一个连接。
+                jedis = jedisPool.getResource();
+                return jedis.get(key);
+            } finally {            //返还到连接池
+                jedis.close();
+            }
         }
     }
-}
 

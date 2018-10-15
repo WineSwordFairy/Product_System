@@ -8,7 +8,6 @@ public class HomeController {
 
     @RequestMapping("/Home")
     public String Index() {
-        return "Welcome to ProductSystem!!!";
-
+        return "Welcome to Product_System!";
     }
 }
