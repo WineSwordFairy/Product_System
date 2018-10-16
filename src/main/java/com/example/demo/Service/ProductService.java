@@ -38,38 +38,47 @@ public class ProductService extends Person {
 
     ///购买商品 （使用Redis 来做 CAS）
     public ResponseInfo BuyProductByRedis(int accountId, int productId, int buyCount) {
+        Jedis jedis = redisClinet.GetResource();
         try {
             ///获取Redis连接。
-            Jedis jedis = redisClinet.GetResource();
-
-            ///给商品数量键添加监视。
+            ///给商品数量键添加监视(乐观锁)。
             String watchRes = jedis.watch("ProductCount");
+            ///获取商品数量。
             int count = Integer.valueOf(redisClinet.get("ProductCount"));
-
             //检查商品数量。
             if (count > 0) {
                 ///开启事务。
                 Transaction tran = jedis.multi();
+                ///数量--。
                 tran.incrBy("ProductCount", -1);
+                ///执行事务。
                 List<Object> result = tran.exec();
-//                if (result.size() != 0) {
+                //扣库存成功。
+                if (result.size() != 0) {
                     if (true) {
-                        //抢购成功,写DB。
-                    String d="sucessfuly";
+                        //抢购成功,同步 ORDER。
+
+                        //响应。
+                        return ProvideResult(0, "");
+
+                    } else {
+                        //抢购失败!
+
+                        return ProvideResult(-1, "抢购失败!");
+
+                    }
                 } else {
-                    //抢购失败!
-                    String d="fail";
-//                    jedis.incrBy("test",1);
+                    //抢购失败。
+
+                    return ProvideResult(-1, "抢购失败!");
                 }
-            } else {
-                //抢购失败。
             }
-            String resultJsonStr = redisClinet.get("ProductCount");
             jedis.close();
         } catch (Exception ex) {
-            String te="";
-        }
 
+        } finally {
+            jedis.close();
+        }
         return ProvideResult(0, "");
     }
 

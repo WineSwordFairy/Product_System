@@ -20,6 +20,9 @@ public class BuyProductController {
     @Autowired
     private BuyProductRecordService buyProductRecordService;
 
+
+
+    ///性能差。
     @RequestMapping("/BuyProduct")
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public String BuyProduct(int accountId, int productId, int count, String createDate) {
@@ -40,7 +43,7 @@ public class BuyProductController {
         }
     }
 
-
+    //Redis来控制库存。
     @RequestMapping("/BuyProductByRedis")
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public String BuyProductByRedis(int accountId, int productId, int count, String createDate) {
@@ -55,7 +58,6 @@ public class BuyProductController {
                 return "商品已售空!";
             }
         } catch (Exception ex)
-
         {
             return ConvertTool.ConvertResponseInfo(new ResponseInfo(-1, ex.getMessage()));
         }
