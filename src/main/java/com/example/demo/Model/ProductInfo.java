@@ -26,7 +26,7 @@ public class ProductInfo implements Serializable {
     public ProductInfo(String title, String sell_point, Long price, String image, Long cid, Integer uid, Integer heatvalue) {
         this.title = title;
         this.sell_point = sell_point;
-        this.price=price;
+        this.price = price;
         this.image = image;
         this.cid = cid;
         this.uid = uid;
@@ -65,9 +65,10 @@ public class ProductInfo implements Serializable {
         return id;
     }
 
-    public ProductInfo(String title, Integer num) {
+    public ProductInfo(String title, Integer num, Long price) {
         this.title = title;
         this.num = num;
+        this.price = price;
     }
 
     public void setId(Long id) {

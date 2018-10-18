@@ -20,4 +20,10 @@ public class DateTool {
             return null;
         }
     }
+
+    ///获取当前时间 yyyy-..
+    public static String GetNowDate() {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+        return df.format(new Date());// new Date()为获取当前系统时间
+    }
 }

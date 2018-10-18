@@ -14,7 +14,7 @@ public class ConvertTool {
 
     ///商品集合反序列化。
     public static List<ProductInfo> ConvertProduct(String data) {
-        JSONArray resultList=JSONArray.fromObject(data);
+        JSONArray resultList = JSONArray.fromObject(data);
         return resultList;
     }
 
@@ -25,8 +25,16 @@ public class ConvertTool {
     }
 
     ///序列化结果。
-    public static String ConvertResponseInfo(ResponseInfo data) {
-        return JSONArray.fromObject(data).toString();
+    public static String SerializeObject(ResponseInfo data) {
+         JSONObject json = JSONObject.fromObject(data);
+         return json.toString();
+    }
+
+    ///序列反化结果。
+    public static ResponseInfo DeserializeObject(String data) {
+        JSONObject jsonObject = JSONObject.fromObject(data);
+        ResponseInfo responseInfo = (ResponseInfo) JSONObject.toBean(jsonObject, ResponseInfo.class);
+        return responseInfo;
     }
 
 }

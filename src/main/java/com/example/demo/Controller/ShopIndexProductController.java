@@ -1,4 +1,4 @@
-﻿package com.example.demo.Controller;
+package com.example.demo.Controller;
 
 import com.example.demo.Book.ProductBook;
 import com.example.demo.DataTools.ConvertTool;
@@ -24,27 +24,9 @@ public class ShopIndexProductController {
 
     @RequestMapping("/ShopIndexProduct")
     public String Index() {
-        try {
-            if (redisClinet.CheckIsKeyExists("ShowFirstPageProduct_key")) {
-                ///查询对应的缓存数据。
-                String resultData = redisClinet.get("ShowFirstPageProduct_key");
-                ///格式化数据返回。
-                List<ProductInfo> resultList = ConvertTool.ConvertProduct(resultData);
-                return "success";
-            } else {
-                ///读首页产品。
-                List<ProductInfo> resultData = productBook.Query();
-                ///写缓存。
+        ResponseInfo result= productService.ProvideProductListIndex();
 
-                ///格式化数据返回。
-                return "";
-
-            }
-        } catch (Exception ex) {
-
-
-            return "";
-        }
+        return ConvertTool.SerializeObject(result);
     }
 
 

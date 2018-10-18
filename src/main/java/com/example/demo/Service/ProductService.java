@@ -11,10 +11,15 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
 public class ProductService extends Person {
+
+    //CreateOrder Url
+    private static String createOrderUrl = "http://localhost:8085/CreateOrder";
+//    private static String param = "sort=1";
 
     @Autowired
     private RedisClient redisClinet;
@@ -22,7 +27,7 @@ public class ProductService extends Person {
     @Autowired
     private ProductBook productBook;
 
-    ///购买商品 (性能差，不使用)。
+    ///购买商品 (DB方案，性能差，不使用)。
     public ResponseInfo BuyProduct(int accountId, int productId, int buyCount) {
         //查看商品数量。
         ProductInfo pInfo = this.productBook.QueryById(productId);
@@ -37,16 +42,16 @@ public class ProductService extends Person {
     }
 
     ///购买商品 （使用Redis 来做 CAS）
-    public ResponseInfo BuyProductByRedis(int accountId, int productId, int buyCount) {
+    public ResponseInfo BuyProductByRedis(int accountId, int productId, int count) {
         Jedis jedis = redisClinet.GetResource();
         try {
             ///获取Redis连接。
             ///给商品数量键添加监视(乐观锁)。
             String watchRes = jedis.watch("ProductCount");
             ///获取商品数量。
-            int count = Integer.valueOf(redisClinet.get("ProductCount"));
+            int productCount = Integer.valueOf(redisClinet.get("ProductCount"));
             //检查商品数量。
-            if (count > 0) {
+            if (productCount > 0) {
                 ///开启事务。
                 Transaction tran = jedis.multi();
                 ///数量--。
@@ -55,33 +60,21 @@ public class ProductService extends Person {
                 List<Object> result = tran.exec();
                 //扣库存成功。
                 if (result.size() != 0) {
-                    if (true) {
-                        //抢购成功,同步 ORDER。
-
-                        //响应。
-                        return ProvideResult(0, "");
-
-                    } else {
-                        //抢购失败!
-
-                        return ProvideResult(-1, "抢购失败!");
-
-                    }
+                    return ProvideResult(0, "减库存成功!");
                 } else {
                     //抢购失败。
-
-                    return ProvideResult(-1, "抢购失败!");
+                    return ProvideResult(-1, "减库存失败!");
                 }
+            } else {
+                return ProvideResult(-1, "商品已售完!");
             }
-            jedis.close();
-        } catch (Exception ex) {
 
+        } catch (Exception ex) {
+            return ProvideResult(-1, ex.getMessage());
         } finally {
             jedis.close();
         }
-        return ProvideResult(0, "");
     }
-
 
     ///提供首页商品列表。
     public ResponseInfo ProvideProductListIndex() {
@@ -90,8 +83,6 @@ public class ProductService extends Person {
             if (redisClinet.CheckIsKeyExists("ShowFirstPageProduct_key")) {
                 ///查询对应的缓存数据。
                 String resultJsonStr = redisClinet.get("ShowFirstPageProduct_key");
-
-
                 //反序列化。
                 List<ProductInfo> productInfoList = ConvertTool.ConvertProduct(resultJsonStr);
                 return ProvideResult(1, "", productInfoList);
@@ -111,5 +102,18 @@ public class ProductService extends Person {
         }
     }
 
+    public ResponseInfo Countpayment(int productId, int count) {
+        try {
+            /// TO DO
+            ProductInfo productInfo = this.productBook.QueryById(productId);
+            BigDecimal payment = new BigDecimal(productInfo.getPrice().intValue() * count);
+            return ProvideResult(0, "",payment);
+        } catch (Exception ex) {
+            ///TODO
+            return ProvideResult(-1, ex.getMessage());
+        } finally {
+            ///TODO
+        }
+    }
 
 }

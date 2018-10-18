@@ -5,6 +5,7 @@ import com.example.demo.DataTools.ConvertTool;
 import com.example.demo.Model.ResponseInfo;
 import com.example.demo.Service.BuyProductRecordService;
 import com.example.demo.Service.ProductService;
+import com.example.demo.Tools.DateTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,6 @@ public class BuyProductController {
 
     @Autowired
     private BuyProductRecordService buyProductRecordService;
-
-
 
     ///性能差。
     @RequestMapping("/BuyProduct")
@@ -39,27 +38,20 @@ public class BuyProductController {
             }
         } catch (Exception ex) {
 
-            return ConvertTool.ConvertResponseInfo(new ResponseInfo(-1, ex.getMessage()));
+            return ConvertTool.SerializeObject(new ResponseInfo(-1, ex.getMessage()));
         }
     }
 
     //Redis来控制库存。
     @RequestMapping("/BuyProductByRedis")
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public String BuyProductByRedis(int accountId, int productId, int count, String createDate) {
+    public String BuyProductByRedis(int accountId, int productId, int count) {
         try {
-            //查询商品数量。
-            ResponseInfo result = productService.BuyProductByRedis(accountId, productId, count);
-            if (result.getCode() == 0) {
-                ///商品数量足够。
-                buyProductRecordService.AddBuyProductRecord(accountId, productId, count, createDate);
-                return "成功!";
-            } else {
-                return "商品已售空!";
-            }
-        } catch (Exception ex)
-        {
-            return ConvertTool.ConvertResponseInfo(new ResponseInfo(-1, ex.getMessage()));
+            //扣库存。
+            ResponseInfo responseInfo = productService.BuyProductByRedis(accountId, productId, count);
+            return ConvertTool.SerializeObject(responseInfo);
+        } catch (Exception ex) {
+            return ConvertTool.SerializeObject(new ResponseInfo(-1, ex.getMessage()));
         }
     }
 }

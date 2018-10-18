@@ -26,7 +26,7 @@ public interface ProductBook {
 //    @Select("SELECT * FROM tb_item WHERE id=#{id}")
 //    ProductInfo QueryById(@Param("id") int pId);
 //    ///根据商品ID查商品。
-    @Select("SELECT title,num FROM tb_item WHERE id=#{id}")
+    @Select("SELECT title,num,price FROM tb_item WHERE id=#{id}")
     ProductInfo QueryById(@Param("id") int pId);
     //更新商品数量。
     @Update("UPDATE tb_item SET num=num - 1 WHERE id=#{id}")
