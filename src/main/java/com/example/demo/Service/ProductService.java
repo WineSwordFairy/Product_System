@@ -2,7 +2,9 @@ package com.example.demo.Service;
 
 import com.example.demo.BaseClass.Person;
 import com.example.demo.Book.ProductBook;
+import com.example.demo.Book.ProductStockOpreationBook;
 import com.example.demo.DataTools.ConvertTool;
+import com.example.demo.Model.LessProductStockRecordInfo;
 import com.example.demo.Model.ProductInfo;
 import com.example.demo.Model.ResponseInfo;
 import com.example.demo.Redis.RedisClient;
@@ -12,6 +14,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -27,18 +31,30 @@ public class ProductService extends Person {
     @Autowired
     private ProductBook productBook;
 
+    @Autowired
+    private ProductStockOpreationBook productStockBook;
+
     ///购买商品 (DB方案，性能差，不使用)。
     public ResponseInfo BuyProduct(int accountId, int productId, int buyCount) {
-        //查看商品数量。
-        ProductInfo pInfo = this.productBook.QueryById(productId);
 
-        if (pInfo.getProductCount() > 0) {
-            //减掉商品数量。
-            this.productBook.UpdateCount(productId);
-        } else {
-            return this.ProvideResult(-1, "商品数量不足");
+        try {
+            /// TO DO
+            ProductInfo pInfo = this.productBook.QueryById(productId);
+
+            if (pInfo.getProductCount() > 0) {
+                //减掉商品数量。
+                this.productBook.ProductStockLess(productId, buyCount);
+                return ProvideResult(0, "Sucessfully");
+            } else {
+                return this.ProvideResult(-1, "商品数量不足");
+            }
+
+        } catch (Exception ex) {
+            ///TODO
+            throw ex;
+        } finally {
+            ///TODO
         }
-        return ProvideResult(0, "Sucessfully");
     }
 
     ///购买商品 （使用Redis 来做 CAS）
@@ -102,12 +118,13 @@ public class ProductService extends Person {
         }
     }
 
+    ///计算订单总金额。
     public ResponseInfo Countpayment(int productId, int count) {
         try {
             /// TO DO
             ProductInfo productInfo = this.productBook.QueryById(productId);
             BigDecimal payment = new BigDecimal(productInfo.getPrice().intValue() * count);
-            return ProvideResult(0, "",payment);
+            return ProvideResult(0, "", payment);
         } catch (Exception ex) {
             ///TODO
             return ProvideResult(-1, ex.getMessage());
@@ -116,4 +133,41 @@ public class ProductService extends Person {
         }
     }
 
+    ///增加商品库存操作记录。
+    public ResponseInfo CreateLessProductCountRecord(int accountId, int productId, int count, String remark) {
+        try {
+            LessProductStockRecordInfo lessProductStockRecordInfo = new LessProductStockRecordInfo(1, accountId, count, remark, new Timestamp(new Date().getTime()));
+            int lessResultInfo = this.productStockBook.Insert(lessProductStockRecordInfo);
+            return ProvideResult(0, "Sucess!!");
+        } catch (Exception ex) {
+            return ProvideResult(-1, ex.getMessage());
+        } finally {
+        }
+    }
+
+    public ResponseInfo LessProductCount(int accountId, int productId, int count, String remark) {
+
+        try {
+            ///1.减商品库存。
+            int lessResult = this.productBook.ProductStockLess(productId, count);
+
+            if (lessResult == 1) {
+                ///2.增加记录。
+                ResponseInfo createResultInfo = this.CreateLessProductCountRecord(accountId, productId, count, remark);
+                ///3. 响应
+                if (createResultInfo.getCode() == 0) {//创建扣库存记录成功。
+                    return ProvideResult(0, "Sucess!!");
+                } else {
+                    return ProvideResult(-1, createResultInfo.getMessage());
+                }
+            } else {//扣库存失败。
+                return ProvideResult(-1, "未知异常，请重试!!");
+            }
+        } catch (Exception ex) {
+            ///TODO
+            return ProvideResult(-1, ex.getMessage());
+        } finally {
+            ///TODO
+        }
+    }
 }
